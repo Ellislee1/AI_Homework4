@@ -9,13 +9,14 @@ KEY = {
     # 10: ' ■ '
 }
 
+
 class Board:
-    def __init__(self, size=4, no_win=1, no_loss=2, max_walls = 3, deterministic = True):
-        self.initilise_board(size, no_win, no_loss, max_walls)
+    def __init__(self, size=4, no_win=1, no_loss=2, max_walls=3, deterministic = True):
+        self.initialize_board(size, no_win, no_loss, max_walls)
         self.deterministic = deterministic
-        self.probs = [0.3,0.7,0.8,0.9]
+        self.probs = [0.3, 0.7, 0.8, 0.9]
     
-    def initilise_board(self, size, no_win, no_loss, max_walls):
+    def initialize_board(self, size, no_win, no_loss, max_walls):
         self.board = np.zeros((size,size))
 
         self.win_states = set()
@@ -23,7 +24,7 @@ class Board:
         self.walls = set()
 
         while no_win > 0:
-            coords = np.random.randint(0,size,2)
+            coords = np.random.randint(0, size, 2)
             if self.board[coords[0],coords[1]] == 0:
                 self.board[coords[0],coords[1]] = 10
 
@@ -52,19 +53,17 @@ class Board:
         print(self.walls)
 
         self.state = self.start
-    
-    
+
     @property
     def start(self):
         start = None
         while start is None:
-            coords = np.random.randint(0,len(self.board),2)
+            coords = np.random.randint(0, len(self.board),2)
             s = np.array2string(coords)
             if s not in self.walls and s not in self.win_states and s not in self.lose_states:
                 start = coords
         
         return start
-
 
     @property
     def is_end(self):
@@ -87,10 +86,9 @@ class Board:
 
             pos = np.fromstring(i, dtype=int, sep=' ')
             
-
             self.board[pos[0],pos[1]] = val
 
-    def movePosition(self, action):
+    def move_position(self, action):
         next_state = self.state.copy()
 
         actions = ["up", "right", "down", "left"]
@@ -101,28 +99,25 @@ class Board:
         if not self.deterministic:
             ran = np.random.uniform(0,1)
             
-            
             if 0.95 <= ran < 1:
                 add = 3
             elif 0.9 <= ran < 0.9:
                 add = 2
-            elif 0.7<= ran < 0.8:
+            elif 0.7 <= ran < 0.8:
                 add = 10
         
         index = (index+add) % len(actions)
 
         action = actions[index]
 
-
-
         if action == "up":
-            next_state = np.array([self.state[0]-1 , self.state[1]])
+            next_state = np.array([self.state[0]-1, self.state[1]])
         elif action == "down":
-            next_state = np.array([self.state[0]+1 , self.state[1]])
+            next_state = np.array([self.state[0]+1, self.state[1]])
         elif action == "left":
-            next_state = np.array([self.state[0] , self.state[1]-1])
+            next_state = np.array([self.state[0], self.state[1]-1])
         elif action == "right":
-            next_state = np.array([self.state[0] , self.state[1]+1])
+            next_state = np.array([self.state[0], self.state[1]+1])
         
         if next_state[0] < 0 or next_state[0] > len(self.board)-1:
             return self.state.copy()
@@ -136,9 +131,7 @@ class Board:
             return self.state.copy()
         return next_state
 
-    
     def print_world(self):
-        board = ''
         for row in self.board:
             row_s = '|'
             for col in row:
