@@ -1,6 +1,7 @@
 import numpy as np
 np.random.seed(118)
 
+
 class Agent:
     def __init__(self, board, lr=0.2, epsilon=0.02):
         self.states = []
@@ -12,26 +13,26 @@ class Agent:
         self.state_values = {}
         for y, y_pos in enumerate(board.board):
             for x, val in enumerate(y_pos):
-                self.state_values[np.array2string(np.array([y,x]))] = val
+                self.state_values[np.array2string(np.array([y, x]))] = val
     
-    def chooseAction(self):
-        mx_next_rwrd = float('-inf')
+    def choose_action(self):
+        mx_next_reward = float('-inf')
         action = np.random.choice(self.actions)
 
-        if np.random.uniform(0,1) <= self.epsilon:
+        if np.random.uniform(0, 1) <= self.epsilon:
             return np.random.choice(self.actions)
         
         for a in self.actions:
-            next_rwrd = self.state_values[np.array2string(self.state.movePosition(a))]
+            next_reward = self.state_values[np.array2string(self.state.move_position(a))]
 
-            if next_rwrd > mx_next_rwrd:
+            if next_reward > mx_next_reward:
                 action = a
-                mx_next_rwrd = next_rwrd
+                mx_next_reward = next_reward
         
         return action
 
     def act(self, action):
-        position = self.state.movePosition(action)
+        position = self.state.move_position(action)
         b = self.state.copy()
         b.state = position
         return b
@@ -40,7 +41,7 @@ class Agent:
         self.states = []
         self.state.state = self.state.start
 
-    def play(self, epochs = 10):
+    def play(self, epochs=10):
         i = 0
         while i < epochs:
             if self.state.is_end:
@@ -61,9 +62,9 @@ class Agent:
                 self.epsilon = max((1-(i/epochs))/2, 0.03)
                 print(self.epsilon)
             else:
-                action = self.chooseAction()
+                action = self.choose_action()
 
-                self.states.append(self.state.movePosition(action))
+                self.states.append(self.state.move_position(action))
 
                 self.state = self.act(action)
             
