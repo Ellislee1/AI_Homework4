@@ -60,7 +60,7 @@ class Api:
             print('There was an error getting the current location: ', e)
 
     def make_move(self, direction: str) -> Optional[Tuple[Tuple[int, int], float]]:
-        """Make a move in the specified direction (N, S, E, W)"""
+        """Make a move in the specified direction.py (N, S, E, W)"""
         data = {'teamId': TEAM_ID, 'type': 'move', 'move': direction, 'worldId': self.world}
         try:
             response = requests.post(MAIN_API, headers=self.headers, data=data)

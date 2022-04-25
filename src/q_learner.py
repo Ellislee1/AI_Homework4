@@ -1,14 +1,19 @@
+import numpy as np
 from typing import List, Tuple
 from pathlib import Path
+from direction import Direction
 
 Q_VALUE = List[float]
 BASE_Q_PATH = 'src/world'
-WORLD_SIZE = 1600
+GRID_WIDTH = 40
+WORLD_SIZE = GRID_WIDTH * GRID_WIDTH
 
 
 class QLearner:
 
-    def __init__(self, world: int = 0):
+    def __init__(self, lr: float = 0.2, gamma: float = 0.02, world: int = 0):
+        self.lr = lr
+        self.gamma = gamma
         self.world = world
         self.q_values: List[Q_VALUE] = []
 
@@ -41,3 +46,43 @@ class QLearner:
                 joined = ','.join(str(x) for x in values)
                 f.write(joined + '\n')
         return
+
+    def update_q_value(self, location: Tuple[int, int], direction: str, reward, new_location: Tuple[int, int]):
+        """ Updates the q values based on the location and the move direction.
+
+        API grid world is organized as follows:
+         -----------------
+        | 0,2 | 1,2 | 2,2 |
+        | --------------- |
+        | 0,1 | 1,1 | 2,1 |
+        | --------------- |
+        | 0,0 | 1,0 | 2,0 |
+         -----------------
+         (i.e. starts from the bottom left corner). Need to map this to the 1-d array of q-values
+        """
+        x, y = location
+        # get the index of the previous q value at this location
+        previous_q_values = self.q_values[x + y*GRID_WIDTH]
+
+        # get the corresponding direction
+        direction: int
+        if direction == Direction.NORTH:
+            direction = 0
+        elif direction == Direction.SOUTH:
+            direction = 1
+        elif direction == Direction.EAST:
+            direction = 2
+        else:
+            direction = 3
+
+        # get the previous value from the saved q values
+        previous_value: float = previous_q_values[direction]
+
+        # get the q values for the new location
+        new_x, new_y = new_location
+        new_q_values = self.q_values[new_x + new_y*GRID_WIDTH]
+        # Apply an exponential moving average
+        new_reward: float = (1-self.lr) * previous_value + self.lr * (reward + self.gamma * np.max(new_q_values))
+
+        # Update existing q value
+        self.q_values[x + y*GRID_WIDTH][direction] = new_reward
