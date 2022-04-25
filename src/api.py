@@ -1,5 +1,5 @@
 import requests
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 API_FILE_PATH = 'src/api.txt'
 TEAM_ID = '1314'
@@ -59,7 +59,7 @@ class Api:
         except requests.exceptions.HTTPError as e:
             print('There was an error getting the current location: ', e)
 
-    def make_move(self, direction: str) -> bool:
+    def make_move(self, direction: str) -> Optional[Tuple[Tuple[int, int], float]]:
         """Make a move in the specified direction (N, S, E, W)"""
         data = {'teamId': TEAM_ID, 'type': 'move', 'move': direction, 'worldId': self.world}
         try:
@@ -69,12 +69,13 @@ class Api:
                 if response.status_code == 200:
                     x = int(json['newState']['x'])
                     y = int(json['newState']['y'])
-                    self.location = x, y
+                    location = x, y
+                    self.location = location
                     print('Location after move: ', self.location)
                     increment = json['scoreIncrement']
-                    # todo: what to do with reward?
+                    # todo: update q values based on reward
                     reward = json['reward']
-                    return True
+                    return location, reward
                 else:
                     print('Something went wrong making a move. Status code: ', response.status_code)
             else:
@@ -85,7 +86,7 @@ class Api:
         except requests.exceptions.HTTPError as e:
             print('There was an error making the move: ', e)
 
-        return False
+        return None
 
     def get_runs(self):
         """Get a list of all the moves from the current game (the newest move is at the start)."""

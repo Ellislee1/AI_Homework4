@@ -1,5 +1,6 @@
 from src.board import Board
 from src.agent import Agent
+from src.q_learner import QLearner
 from src.api import Api
 
 
@@ -24,4 +25,9 @@ def api_tests():
 
 if __name__ == "__main__":
     # run()
-    api_tests()
+    q_learner = QLearner()
+    q_learner.read_q_values()
+    print('q vals: ', q_learner.q_values)
+    # q_learner.save_values_to_file()
+
+    # api_tests()
