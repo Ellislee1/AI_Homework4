@@ -1,5 +1,6 @@
 import requests
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
+from direction import Direction
 
 API_FILE_PATH = 'src/api.txt'
 TEAM_ID = '1314'
@@ -41,7 +42,7 @@ class Api:
         except requests.exceptions.HTTPError as e:
             print('There was an error entering the world: ', e)
 
-    def get_location(self):
+    def get_location(self) -> Optional[Tuple[int, int]]:
         """Get the current location"""
         params = {'type': 'location', 'teamId': TEAM_ID}
         try:
@@ -49,8 +50,15 @@ class Api:
             json = response.json()
             if json['code'] == OK:
                 world = int(json['world'])
+                # not in a world
+                if world == -1:
+                    return None
                 state = json['state']
                 print(f'world: {world}, state: {state}')
+                location = json['state'].split(':')
+                x = int(location[0])
+                y = int(location[1])
+                return x, y
             else:
                 print('Something went wrong getting the current location. ', end='')
                 if 'message' in json:
@@ -59,22 +67,28 @@ class Api:
         except requests.exceptions.HTTPError as e:
             print('There was an error getting the current location: ', e)
 
-    def make_move(self, direction: str) -> Optional[Tuple[Tuple[int, int], float]]:
+        return None
+
+    def make_move(self, direction: Direction) -> Tuple[Optional[Tuple[int, int]], float]:
         """Make a move in the specified direction.py (N, S, E, W)"""
-        data = {'teamId': TEAM_ID, 'type': 'move', 'move': direction, 'worldId': self.world}
+        data = {'teamId': TEAM_ID, 'type': 'move', 'move': direction.value, 'worldId': self.world}
         try:
             response = requests.post(MAIN_API, headers=self.headers, data=data)
             json = response.json()
             if json['code'] == OK:
                 if response.status_code == 200:
+                    print(json)
+                    reward = round(float(json['reward']), 5)
+                    # Check if an exit square was hit
+                    if not json['newState']:
+                        print('hit an exit tile: new state is null')
+                        return None, reward
                     x = int(json['newState']['x'])
                     y = int(json['newState']['y'])
                     location = x, y
                     self.location = location
                     print('Location after move: ', self.location)
-                    increment = json['scoreIncrement']
-                    # todo: update q values based on reward
-                    reward = json['reward']
+                    # increment = json['scoreIncrement']
                     return location, reward
                 else:
                     print('Something went wrong making a move. Status code: ', response.status_code)
@@ -86,7 +100,7 @@ class Api:
         except requests.exceptions.HTTPError as e:
             print('There was an error making the move: ', e)
 
-        return None
+        return None, 0
 
     def get_runs(self):
         """Get a list of all the moves from the current game (the newest move is at the start)."""

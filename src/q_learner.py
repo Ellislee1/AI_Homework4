@@ -16,6 +16,7 @@ class QLearner:
         self.gamma = gamma
         self.world = world
         self.q_values: List[Q_VALUE] = []
+        self.read_q_values()
 
     def read_q_values(self):
         path = BASE_Q_PATH + str(self.world) + '.txt'
@@ -47,7 +48,7 @@ class QLearner:
                 f.write(joined + '\n')
         return
 
-    def update_q_value(self, location: Tuple[int, int], direction: str, reward, new_location: Tuple[int, int]):
+    def update_q_value(self, location: Tuple[int, int], direction: Direction, reward, new_location: Tuple[int, int]):
         """ Updates the q values based on the location and the move direction.
 
         API grid world is organized as follows:
@@ -65,12 +66,11 @@ class QLearner:
         previous_q_values = self.q_values[x + y*GRID_WIDTH]
 
         # get the corresponding direction
-        direction: int
-        if direction == Direction.NORTH:
+        if direction.value == Direction.NORTH.value:
             direction = 0
-        elif direction == Direction.SOUTH:
+        elif direction.value == Direction.SOUTH.value:
             direction = 1
-        elif direction == Direction.EAST:
+        elif direction.value == Direction.EAST.value:
             direction = 2
         else:
             direction = 3
@@ -78,11 +78,15 @@ class QLearner:
         # get the previous value from the saved q values
         previous_value: float = previous_q_values[direction]
 
-        # get the q values for the new location
-        new_x, new_y = new_location
-        new_q_values = self.q_values[new_x + new_y*GRID_WIDTH]
-        # Apply an exponential moving average
-        new_reward: float = (1-self.lr) * previous_value + self.lr * (reward + self.gamma * np.max(new_q_values))
+        # if an exit square was hit, just use the reward (new location is None)
+        if not new_location:
+            new_reward = reward
+        else:
+            # get the q values for the new location
+            new_x, new_y = new_location
+            new_q_values = self.q_values[new_x + new_y*GRID_WIDTH]
+            # Apply an exponential moving average
+            new_reward: float = (1-self.lr) * previous_value + self.lr * (reward + self.gamma * np.max(new_q_values))
 
         # Update existing q value
-        self.q_values[x + y*GRID_WIDTH][direction] = new_reward
+        self.q_values[x + y*GRID_WIDTH][direction] = round(new_reward, 5)
