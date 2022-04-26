@@ -1,24 +1,28 @@
 import numpy as np
 from typing import List, Tuple
 from pathlib import Path
-from direction import Direction
+from src.direction import Direction
 
 Q_VALUE = List[float]
 BASE_Q_PATH = 'src/world'
 GRID_WIDTH = 40
 WORLD_SIZE = GRID_WIDTH ** 2
+DECAY_FACTOR = 0.99
 
 
 class QLearner:
 
-    def __init__(self, lr: float = 0.2, gamma: float = 0.02, world: int = 0):
+    def __init__(self, lr: float = 0.2, gamma: float = 0.02, world: int = 0, epsilon: float = 0.3):
         self.lr = lr
         self.gamma = gamma
+        self.epsilon = epsilon
+        self.world_run = 0
         self.world = world
         self.q_values: List[Q_VALUE] = []
         self.read_q_values()
 
     def read_q_values(self):
+        # sourcery skip: for-append-to-extend, for-index-underscore
         path = BASE_Q_PATH + str(self.world) + '.txt'
         q_values: List[Q_VALUE] = []
         # if existing q values are already present for this world
@@ -26,8 +30,17 @@ class QLearner:
             # open the file if it exists, otherwise create it
             with open(path, 'r+') as f:
                 # q values are saved in the form: N, S, E, W
-                for line in f:
+                for i, line in enumerate(f):
+                    if i == 0:
+                        header = line.strip().split(',')
+                        self.world_run = int(header[0])+1
+                        self.epsilon = float(header[1])
+                        continue
+
                     line = line.strip()
+
+                    if line == '':
+                        continue
                     # convert values to float
                     values = list(map(float, line.split(',')))
                     q_values.append(values)
@@ -41,12 +54,13 @@ class QLearner:
     def save_values_to_file(self):
         path = BASE_Q_PATH + str(self.world) + '.txt'
         with open(path, 'w+') as f:
+            joined = f'{self.world_run},{self.epsilon}\n'
             # write each q value as separate line
             for values in self.q_values:
                 # create comma separated list
-                joined = ','.join(str(x) for x in values)
-                f.write(joined + '\n')
-        return
+                joined += ','.join(str(x) for x in values)
+                joined += '\n'
+            f.write(joined + '\n')
 
     def update_q_value(self, location: Tuple[int, int], direction: Direction, reward, new_location: Tuple[int, int]):
         """ Updates the q values based on the location and the move direction.
@@ -67,16 +81,16 @@ class QLearner:
 
         # get the corresponding direction
         if direction.value == Direction.NORTH.value:
-            direction = 0
+            _direction = 0
         elif direction.value == Direction.SOUTH.value:
-            direction = 1
+            _direction = 1
         elif direction.value == Direction.EAST.value:
-            direction = 2
+            _direction = 2
         else:
-            direction = 3
+            _direction = 3
 
         # get the previous value from the saved q values
-        previous_value: float = previous_q_values[direction]
+        previous_value: float = previous_q_values[_direction]
 
         # if an exit square was hit, just use the reward (new location is None)
         if not new_location:
@@ -89,9 +103,36 @@ class QLearner:
             new_reward: float = (1-self.lr) * previous_value + self.lr * (reward + self.gamma * np.max(new_q_values))
 
         # Update existing q value
-        self.q_values[x + y*GRID_WIDTH][direction] = round(new_reward, 5)
+        self.q_values[x + y*GRID_WIDTH][_direction] = round(new_reward, 5)
 
     def pick_direction(self, location: Tuple[int, int]):
         # Get current values for a position.
         # If all zeros pick a random action from possible actions
+        # If not use decaying epsilon greedy value to pick next move.
+
+        x, y = location
+
+        current_values = np.array(self.q_values[x + y*GRID_WIDTH])
+
+        if np.random.normal() < self.epsilon or np.all(current_values == 0):
+            # Select random action if we are less than our epsilon or if we have no information about the space
+            action = np.random.randint(0,4)
+        else:
+            # Select the best action
+            action = np.argmax(current_values)
+
+        if action == 0:
+            return Direction.NORTH
+        elif action == 1:
+            return Direction.SOUTH
+        elif action == 2:
+            return Direction.EAST
+        else:
+            return Direction.WEST
+
+    def decay_epsilon(self):
+        self.epsilon *= DECAY_FACTOR
+
+
+
 

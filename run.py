@@ -16,7 +16,7 @@ def make_single_moves(world: int = 0):
         location = 0, 0
 
     # direction = Direction.SOUTH
-    direction = Direction.EAST
+    direction = q_learner.pick_direction(location)
     new_location, reward = api.make_move(direction)
     
     if new_location is None:

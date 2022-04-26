@@ -1,6 +1,6 @@
 import requests
 from typing import List, Optional, Tuple
-from direction import Direction
+from src.direction import Direction
 
 API_FILE_PATH = 'src/api.txt'
 TEAM_ID = '1314'
