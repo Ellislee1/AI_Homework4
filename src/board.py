@@ -98,14 +98,11 @@ class Board:
         add = 0
         if not self.deterministic:
             ran = np.random.uniform(0,1)
-            
             if 0.95 <= ran < 1:
                 add = 3
-            elif 0.9 <= ran < 0.9:
-                add = 2
             elif 0.7 <= ran < 0.8:
                 add = 10
-        
+
         index = (index+add) % len(actions)
 
         action = actions[index]
@@ -118,12 +115,12 @@ class Board:
             next_state = np.array([self.state[0], self.state[1]-1])
         elif action == "right":
             next_state = np.array([self.state[0], self.state[1]+1])
-        
+
         if next_state[0] < 0 or next_state[0] > len(self.board)-1:
             return self.state.copy()
         elif next_state[1] < 0 or next_state[1] > len(self.board)-1:
             return self.state.copy()
-        
+
         return self.check_walls(next_state)
     
     def check_walls(self, next_state):
@@ -135,10 +132,7 @@ class Board:
         for row in self.board:
             row_s = '|'
             for col in row:
-                if col not in KEY:
-                    row_s += f'{col:.1f}|'
-                else:
-                    row_s += f'{KEY[col]}|'
+                row_s += f'{col:.1f}|' if col not in KEY else f'{KEY[col]}|'
             print(row_s)
 
     def copy(self):

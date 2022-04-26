@@ -18,6 +18,9 @@ def make_single_moves(world: int = 0):
     # direction = Direction.SOUTH
     direction = Direction.EAST
     new_location, reward = api.make_move(direction)
+    
+    if new_location is None:
+        raise ValueError('[ERROR]:: `new_location` registered as None. This value will break the q-learnern which requires a real location.')
 
     q_learner.update_q_value(location, direction, reward, new_location)
     # hit an exit tile (ex: (19, 0) in world 0)
@@ -52,3 +55,5 @@ if __name__ == "__main__":
     # q_learner.save_values_to_file()
 
     # api_tests()
+
+

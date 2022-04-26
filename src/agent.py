@@ -67,5 +67,6 @@ class Agent:
                 self.states.append(self.state.move_position(action))
 
                 self.state = self.act(action)
+                
             
 

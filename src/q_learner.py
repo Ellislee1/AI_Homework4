@@ -6,7 +6,7 @@ from direction import Direction
 Q_VALUE = List[float]
 BASE_Q_PATH = 'src/world'
 GRID_WIDTH = 40
-WORLD_SIZE = GRID_WIDTH * GRID_WIDTH
+WORLD_SIZE = GRID_WIDTH ** 2
 
 
 class QLearner:
@@ -90,3 +90,8 @@ class QLearner:
 
         # Update existing q value
         self.q_values[x + y*GRID_WIDTH][direction] = round(new_reward, 5)
+
+    def pick_direction(self, location: Tuple[int, int]):
+        # Get current values for a position.
+        # If all zeros pick a random action from possible actions
+
