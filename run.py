@@ -5,37 +5,43 @@ from src.api import Api
 from src.direction import Direction
 
 
-def make_single_moves(world: int = 0):
+def make_move_loop(world: int = 0):
     api = Api()
     q_learner = QLearner()
-    # print('q vals: ', q_learner.q_values)
+    flagOne = True
+    flagTwo = True
     location = api.get_location()
-    # enter a world if not in one
-    if not location:
-        api.enter_world(world)
-        location = 0, 0
 
-    # direction = Direction.SOUTH
-    direction = q_learner.pick_direction(location)
-    new_location, reward = api.make_move(direction)
-    
-    if new_location is None:
-        raise ValueError('[ERROR]:: `new_location` registered as None. This value will break the q-learnern which requires a real location.')
+    while flagOne and flagTwo:
+        # print('q vals: ', q_learner.q_values)
+        # enter a world if not in one
+        if not location:
+            print("new location")
+            api.enter_world(world)
+            location = 0, 0
+            flagOne = False
 
-    q_learner.update_q_value(location, direction, reward, new_location)
-    # hit an exit tile (ex: (19, 0) in world 0)
-    if not new_location:
-        api.enter_world(world)
+        # direction = Direction.SOUTH
+        direction = q_learner.pick_direction(location)
+        new_location, reward = api.make_move(direction)
 
-    q_learner.save_values_to_file()
+        q_learner.update_q_value(location, direction, reward, new_location)
+        # hit an exit tile (ex: (19, 0) in world 0)
+        if not new_location:
+            print("new location")
+            api.enter_world(world)
+            flagTwo = False
+
+        q_learner.save_values_to_file()
+        location = new_location
 
 
 def run(world: int = 0):
-    # b = Board()
-    # b.print_world()
-    # a = Agent(b)
-    # a.play(5000)
-    make_single_moves(world)
+     #b = Board()
+     #b.print_world()
+     #a = Agent(b)
+     #a.play(5000)
+    make_move_loop(world)
 
 
 def api_tests():
@@ -55,5 +61,3 @@ if __name__ == "__main__":
     # q_learner.save_values_to_file()
 
     # api_tests()
-
-
