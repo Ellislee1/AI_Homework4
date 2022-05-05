@@ -34,6 +34,7 @@ class Api:
             if json['code'] == OK:
                 self.world = json['worldId']
                 self.run_id = json['runId']
+                print('entered world: ', json)
             else:
                 print('There was an error creating the game. ', end='')
                 if 'message' in json:
