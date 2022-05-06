@@ -5,7 +5,7 @@ from src.direction import Direction
 
 
 def make_move_loop(world: int = 0):
-    api = Api()
+    api = Api(world)
     q_learner = QLearner(world=world)
     explorations = 0
     location = api.get_location()
@@ -15,7 +15,7 @@ def make_move_loop(world: int = 0):
         api.enter_world(world)
         location = 0, 0
 
-    while explorations < 2:
+    while True:
         direction = q_learner.pick_direction(location)
         new_location, reward = api.make_move(direction)
 
@@ -30,6 +30,11 @@ def make_move_loop(world: int = 0):
             # Decay the epsilon for the next iteration
             q_learner.decay_epsilon()
             q_learner.increment_world_run()
+
+            if explorations == 1:
+                print('-----------------------')
+                q_learner.save_values_to_file()
+                break
             api.enter_world(world)
 
         q_learner.save_values_to_file()

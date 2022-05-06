@@ -11,7 +11,7 @@ OK = 'OK'
 
 class Api:
     
-    def __init__(self):
+    def __init__(self, world: int = 0):
         # parse api key info
         with open(API_FILE_PATH) as f:
             self.api_key = f.readline().strip()
@@ -20,7 +20,7 @@ class Api:
         # Added dummy user agent because the default python user-agent was being rejected
         self.headers = {'x-api-key': self.api_key, 'userid': self.user_id, 'Content-Type':
                         'application/x-www-form-urlencoded', 'User-Agent': 'XY'}
-        self.world = 0
+        self.world = world
         self.location = -1, -1
         self.run_id = -1
         return
