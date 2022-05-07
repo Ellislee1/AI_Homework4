@@ -7,7 +7,7 @@ Q_VALUE = List[float]
 BASE_Q_PATH = 'src/world'
 GRID_WIDTH = 40
 WORLD_SIZE = GRID_WIDTH ** 2
-DECAY_FACTOR = 0.99
+DECAY_FACTOR = 0.95
 
 
 class QLearner:
@@ -53,6 +53,7 @@ class QLearner:
 
     def save_values_to_file(self):
         path = BASE_Q_PATH + str(self.world) + '.txt'
+        # print('PATH: ', path)
         with open(path, 'w+') as f:
             joined = f'{self.world_run},{self.epsilon}\n'
             # write each q value as separate line
@@ -129,6 +130,9 @@ class QLearner:
             return Direction.EAST
         else:
             return Direction.WEST
+
+    def increment_world_run(self):
+        self.world_run += 1
 
     def decay_epsilon(self):
         self.epsilon *= DECAY_FACTOR
