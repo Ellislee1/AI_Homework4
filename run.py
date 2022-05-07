@@ -31,7 +31,7 @@ def make_move_loop(world: int = 0):
             q_learner.decay_epsilon()
             q_learner.increment_world_run()
 
-            if explorations == 1:
+            if explorations == 5:
                 print('-----------------------')
                 q_learner.save_values_to_file()
                 break
